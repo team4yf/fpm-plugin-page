@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Koa-Socket Example</title>
+  <link href="//cdn.bootcss.com/flat-ui/2.3.0/css/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/flat-ui/2.3.0/css/flat-ui.min.css" rel="stylesheet">
+  <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+  <style>
+    #container {
+      width: 480px;
+      padding: 10px;
+      font: 18px "Lucida Grande", Helvetica, Arial, sans-serif;
+    }
+
+    @media screen and (max-device-width:400px) {
+      #container {
+        width: 380px;
+        padding: 10px;
+        font: 12px "Lucida Grande", Helvetica, Arial, sans-serif;
+      }
+      h1 {
+        font-size: 1.6em;
+      }
+    }
+
+    a {
+      color: #00B7FF;
+    }
+    h6{
+      font-size: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+    }
+    p{
+      font-size: 14px;
+      color: #333;
+    }
+    .online{
+      color: #2ecc71; 
+    }
+    .offline{
+      color: #ddd; 
+    }
+  </style>
+</head>
+
+<body ng-app="app" ng-controller="AppCtrl">
+  <div class="container">
+    <h6>开关控制</h6>
+    <div class="row">
+      <div class="col-md-6 col-xs-6">
+        <button
+          ng-click="send('start')"
+          class="btn btn-large btn-block btn-success"><i class="fa fa-play"></i></button>
+      </div>
+      <div class="col-md-6 col-xs-6">
+        <button
+          ng-click="send('stop')"
+          class="btn btn-large btn-block btn-danger"><i class="fa fa-pause"></i></button>
+      </div>
+    </div>
+    <p>运行状态: <i class="fa fa-circle " ng-class="{'true': 'online', 'false': 'offline'}[status.running]"></i></p>
+    <h6>指令控制</h6>
+    <div>
+      <input type="text" ng-model="commander.command" placeholder="Command" class="form-control" />
+      <p></p>
+      <input type="text" ng-model="commander.value" value="" placeholder="Value" class="form-control" />
+      <p></p>
+      <button
+          ng-click="send(commander.command, commander.value)"
+          class="btn btn-large btn-block btn-inverse">发送</button>
+    </div>
+    <h6>客户端列表</h6>
+    <p>在线：<span ng-bind="status.active"></span>/<span ng-bind="status.total"></span> 
+      <button 
+        ng-click="refresh($event)"
+        class="pull-right btn-warning btn btn-xs">点击刷新</button>
+    </p>
+    <div class="clearfix"></div>
+    <ul class="list-group">
+      <li class="list-group-item"
+        ng-repeat="host in status.hosts track by $index">
+        <i class="fa fa-circle" ng-class="{'true': 'online', 'false': 'offline'}[host.online]"></i>
+        <span ng-bind="host.title"></span>
+        <span ng-bind-html="host.img"></span>
+      </li>
+    </ul>
+  </div>
+  
+</body>
+<script src="https://cdn.bootcss.com/angular.js/1.6.4/angular.min.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script>
+  angular.module('app', [])
+    .controller('AppCtrl', function ($scope, $timeout, $sce) {
+      $scope.status = {
+        hosts: [
+          // {
+          //   title: 'Base-1',
+          //   online: false,
+          //   status: 'running',
+          //   img: '',
+          // },
+        ],
+        total: 10,
+        active: 0,
+        running: false,
+      }
+      $scope.commander = {
+        command: '',
+        value: '',
+      }
+      var server = io('http://api.yunplus.io')
+      server.on('message', function (data) {
+        // console.log(data, data.id)
+        // if(data.target !== 'server'){
+        //   return;
+        // }
+        switch(data.command){
+          case 'connect':
+          case 'login':
+            $scope.status.active = $scope.status.active + 1;
+            var imgBaseData = 'data:image/png;base64,' + data.img;
+            var img = data.img ? '<img src="' + imgBaseData + '" class="img-rounded" alt="" />' : '';
+            console.log(img)
+            $timeout(function(){
+              $scope.status.hosts.push({
+                id: data.id,
+                title: 'C',
+                online: true,
+                status: data.status,
+                img: $sce.trustAsHtml(img),
+              })
+            }, 1)
+            // 
+            return;
+          case 'reconnect':
+            console.log('reconnect');
+            return;
+          case 'disconnect':
+            $scope.status.active = $scope.status.active - 1;
+            console.log('disconnect');
+            return;
+        }
+        
+      });
+
+      var send = function(data){
+        server.emit('message', data)
+      };
+
+      $scope.refresh = function($event){
+        $scope.status.hosts = [];
+        $scope.status.active = 0;
+        send({
+          command: 'refresh',
+        })
+        console.log('refresh');
+      }
+      $scope.send = function(command, val, $event){
+        if(command === 'start'){
+          $scope.status.running = true;
+        }else if(command === 'stop'){
+          $scope.status.running = false;
+        }
+        send({
+          command: command,
+          val: val || '',
+        });
+      }
+    })
+</script>
+
+
+</html>
