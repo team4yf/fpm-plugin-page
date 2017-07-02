@@ -15,7 +15,7 @@
       font: 18px "Lucida Grande", Helvetica, Arial, sans-serif;
     }
 
-    @media screen and (max-device-width:400px) {
+    /*@media screen and (max-device-width:400px) {
       #container {
         width: 380px;
         padding: 10px;
@@ -24,7 +24,7 @@
       h1 {
         font-size: 1.6em;
       }
-    }
+    }*/
 
     a {
       color: #00B7FF;
@@ -39,10 +39,10 @@
       color: #333;
     }
     .online{
-      color: #2ecc71; 
+      color: #2ecc71;
     }
     .offline{
-      color: #ddd; 
+      color: #ddd;
     }
   </style>
 </head>
@@ -74,8 +74,8 @@
           class="btn btn-large btn-block btn-inverse">发送</button>
     </div>
     <h6>客户端列表</h6>
-    <p>在线：<span ng-bind="status.active"></span>/<span ng-bind="status.total"></span> 
-      <button 
+    <p>在线：<span ng-bind="status.active"></span>/<span ng-bind="status.total"></span>
+      <button
         ng-click="refresh($event)"
         class="pull-right btn-warning btn btn-xs">点击刷新</button>
     </p>
@@ -89,7 +89,6 @@
       </li>
     </ul>
   </div>
-  
 </body>
 <script src="https://cdn.bootcss.com/angular.js/1.6.4/angular.min.js"></script>
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
@@ -116,9 +115,9 @@
       var server = io('http://api.yunplus.io')
       server.on('message', function (data) {
         // console.log(data, data.id)
-        // if(data.target !== 'server'){
-        //   return;
-        // }
+        if(data.target !== 'server'){
+          return;
+        }
         switch(data.command){
           case 'connect':
           case 'login':
@@ -135,7 +134,6 @@
                 img: $sce.trustAsHtml(img),
               })
             }, 1)
-            // 
             return;
           case 'reconnect':
             console.log('reconnect');
@@ -145,7 +143,6 @@
             console.log('disconnect');
             return;
         }
-        
       });
 
       var send = function(data){
