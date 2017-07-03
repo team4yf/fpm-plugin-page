@@ -87,8 +87,8 @@
       <li class="list-group-item"
         ng-repeat="host in status.hosts track by $index"
         ng-click="client(host, $index)">
-        <i class="fa fa-circle" ng-class="{'true': 'online', 'false': 'offline'}[host.online]"></i>
         <span ng-bind="host.title"></span>
+        <span ng-bind="host.version"></span>
         <span ng-bind-html="host.img"></span>
         <span class="status pull-right" ng-bind="host.status"></span>
         <div class="clearfix"></div>
@@ -186,8 +186,9 @@
             var img = data.img ? '<img src="' + imgBaseData + '" class="img-rounded" alt="" />' : '';
             $scope.status.hosts.push({
               id: data.id,
-              title: 'C',
+              title: '>',
               online: true,
+              version: data.version,
               status: data.status,
               img: $sce.trustAsHtml(img),
             });
