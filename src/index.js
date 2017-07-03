@@ -27,11 +27,6 @@ const Router = (router, fpm) => {
     }
 
   })
-  router.get('/eggs', async (ctx, next) => {
-    await ctx.render('login', {
-
-    })
-  })
 
   router.get('/eggs/login', async (ctx, next) => {
     await ctx.render('login', {
@@ -54,7 +49,36 @@ const Router = (router, fpm) => {
     await ctx.render('main')
   })
 
+  router.get('/eggs/logs/:id', async (ctx, next) => {
+    let id = ctx.params.id
+    await ctx.render('log', {
+      items: datas[id]
+    })
+  })
+
   return router
+}
+
+let datas = {};
+
+const on_messages = (message, data) =>{
+  if(data.target !== 'server') return;
+  if(data.channel !== 'Eggs') return;
+  if(data.id === undefined) return;
+  console.log(data.command)
+  switch(data.command){
+    case 'connect':
+    case 'login':
+      let items = datas[data.id] || []
+      data.at = new Date().toLocaleString()
+      items.unshift(data)
+      datas[data.id] = items
+      return
+
+  }
+}
+const on_connect = (message, data) =>{
+  // console.log(data)
 }
 
 export default {
@@ -64,6 +88,15 @@ export default {
       let fpm = args[0]
       let r = fpm.createRouter()
       fpm.bindRouter(Router(r, fpm))
+
+      // subscrib the io messages
+      fpm.subscribe('socketio.message', on_messages)
+      fpm.subscribe('socketio.connection', on_connect)
+      
+      setInterval(()=>{
+         fpm.execute('websocket.broadcast', {command: "refresh", channel: "Eggs"}, '0.0.1')
+      }, 60 * 1000)
+
     })
   }
 }
