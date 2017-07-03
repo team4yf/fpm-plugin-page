@@ -52,6 +52,7 @@
 
 <body ng-app="app" ng-controller="AppCtrl">
   <div class="container">
+    <h6>彩金池  <span ng-bind="jackpot | currency:'$ ':0"></span></h6>
     <h6>开关控制</h6>
     <div class="row">
       <div class="col-md-6 col-xs-6">
@@ -97,22 +98,22 @@
           <div class="row">
             <div class="col-md-3 col-xs-3">
               <button
-                ng-click="sendClient(host.id, 'start')"
+                ng-click="sendClient(host.id, 'start', $event)"
                 class="btn btn-large btn-block btn-success"><i class="fa fa-play"></i></button>
             </div>
             <div class="col-md-3 col-xs-3">
               <button
-                ng-click="sendClient(host.id, 'stop')"
+                ng-click="sendClient(host.id, 'stop', $event)"
                 class="btn btn-block btn-danger"><i class="fa fa-pause"></i></button>
             </div>
             <div class="col-md-3 col-xs-3">
               <button
-                ng-click="sendClient(host.id, 'update')"
+                ng-click="sendClient(host.id, 'update', $event)"
                 class="btn btn-large btn-block btn-success"><i class="fa fa-cloud-upload"></i></button>
             </div>
             <div class="col-md-3 col-xs-3">
               <button
-                ng-click="sendClient(host.id, 'exit')"
+                ng-click="sendClient(host.id, 'exit', $event)"
                 class="btn btn-large btn-block btn-danger"><i class="fa fa-close"></i></button>
             </div>
           </div>
@@ -161,7 +162,8 @@
       $scope.commander = {
         command: '',
         value: '',
-      }
+      };
+      $scope.jackpot = 0;
       var server = io('http://api.yunplus.io')
       server.on('message', function (data) {
         console.log(data, data.id)
@@ -175,6 +177,9 @@
           return;
         }
         switch(data.command){
+          case 'jackpot':
+            $scope.jackpot = data.jackpot;
+            return;
           case 'connect':
           case 'login':
             if($scope.status.hosts.searchById(data.id)){
@@ -223,12 +228,12 @@
       $scope.client = function(host, $index){
         host.control = !(host.control || false);        
       }
-      $scope.sendClient = function(id, command){
-        console.log(id, command)
+      $scope.sendClient = function(id, command, $event){
         send({
           command: command,
           id: id,
         });
+        $event.stopPropagation();
       }
       $scope.send = function(command, val, $event){
         if(command === 'start'){
