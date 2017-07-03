@@ -44,6 +44,9 @@
     .offline{
       color: #ddd;
     }
+    .status{
+      font-size: 12px;
+    }
   </style>
 </head>
 
@@ -86,6 +89,7 @@
         <i class="fa fa-circle" ng-class="{'true': 'online', 'false': 'offline'}[host.online]"></i>
         <span ng-bind="host.title"></span>
         <span ng-bind-html="host.img"></span>
+        <span class="status" ng-bind="host.status"></span>
       </li>
     </ul>
   </div>
@@ -93,29 +97,43 @@
 <script src="https://cdn.bootcss.com/angular.js/1.6.4/angular.min.js"></script>
 <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 <script>
+  Array.prototype.removeById = function(id) {
+    var len = this.length;
+    var delete_id = false;
+    for( var i = 0 ; i < len; i++){
+      if(this[i].id === id){
+        delete_id = i;
+        break;
+      }
+    }
+    if(delete_id === false){
+      return false;
+    }
+    this.splice(delete_id, 1);
+    return true;
+  };
   angular.module('app', [])
     .controller('AppCtrl', function ($scope, $timeout, $sce) {
       $scope.status = {
-        hosts: [
-          // {
-          //   title: 'Base-1',
-          //   online: false,
-          //   status: 'running',
-          //   img: '',
-          // },
-        ],
+        hosts: new Array(),
         total: 10,
         active: 0,
         running: false,
-      }
+      };
       $scope.commander = {
         command: '',
         value: '',
       }
       var server = io('http://api.yunplus.io')
       server.on('message', function (data) {
-        // console.log(data, data.id)
+        console.log(data, data.id)
         if(data.target !== 'server'){
+          return;
+        }
+        if(data.channel !== 'Eggs'){
+          return;
+        }
+        if(!data.id){
           return;
         }
         switch(data.command){
@@ -124,28 +142,31 @@
             $scope.status.active = $scope.status.active + 1;
             var imgBaseData = 'data:image/png;base64,' + data.img;
             var img = data.img ? '<img src="' + imgBaseData + '" class="img-rounded" alt="" />' : '';
-            console.log(img)
-            $timeout(function(){
-              $scope.status.hosts.push({
-                id: data.id,
-                title: 'C',
-                online: true,
-                status: data.status,
-                img: $sce.trustAsHtml(img),
-              })
-            }, 1)
+            $scope.status.hosts.push({
+              id: data.id,
+              title: 'C',
+              online: true,
+              status: data.status,
+              img: $sce.trustAsHtml(img),
+            });
+            $scope.$apply();
             return;
           case 'reconnect':
             console.log('reconnect');
             return;
+          case 'logout':
           case 'disconnect':
-            $scope.status.active = $scope.status.active - 1;
+            if($scope.status.hosts.removeById(data.id)){
+              $scope.status.active = $scope.status.active - 1;
+            }
+            $scope.$apply();
             console.log('disconnect');
             return;
         }
       });
 
       var send = function(data){
+        data.channel = 'Eggs';
         server.emit('message', data)
       };
 
@@ -155,7 +176,6 @@
         send({
           command: 'refresh',
         })
-        console.log('refresh');
       }
       $scope.send = function(command, val, $event){
         if(command === 'start'){
