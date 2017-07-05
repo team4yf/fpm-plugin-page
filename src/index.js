@@ -61,12 +61,25 @@ const Router = (router, fpm) => {
 
 let datas = {};
 
+let jackpot = 0;
+
+let dbm = undefined;
+
 const on_messages = (message, data) =>{
   if(data.target !== 'server') return;
   if(data.channel !== 'Eggs') return;
   if(data.id === undefined) return;
-  console.log(data.command)
   switch(data.command){
+    case 'jackpot':
+      jackpot = data.jackpot
+      if(dbm){
+        let arg = {
+        　table: "eggs_jackpots",
+        　row: { jackpot: parseInt(jackpot), createAt: _.now()}
+        };
+        dbm.createAsync(arg)
+      }
+      return
     case 'connect':
     case 'login':
       let items = datas[data.id] || []
@@ -74,7 +87,6 @@ const on_messages = (message, data) =>{
       items.unshift(data)
       datas[data.id] = items
       return
-
   }
 }
 const on_connect = (message, data) =>{
@@ -83,20 +95,14 @@ const on_connect = (message, data) =>{
 
 export default {
   bind: (fpm) => {
-
     fpm.registerAction('FPM_ROUTER', (args) => {
       let fpm = args[0]
       let r = fpm.createRouter()
       fpm.bindRouter(Router(r, fpm))
-
+      dbm = fpm.M
       // subscrib the io messages
       fpm.subscribe('socketio.message', on_messages)
       fpm.subscribe('socketio.connection', on_connect)
-      
-      setInterval(()=>{
-         fpm.execute('websocket.broadcast', {command: "refresh", channel: "Eggs"}, '0.0.1')
-      }, 60 * 1000)
-
     })
   }
 }
