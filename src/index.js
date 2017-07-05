@@ -88,6 +88,9 @@ const on_messages = (message, data) =>{
       clients[data.id] = data
       return
     case 'refresh':
+      if (data.status !== 'PLAYING'){
+        return;
+      }
       let items = datas[data.id] || []
       data.at = new Date().toLocaleString()
       items.unshift(data)
@@ -102,7 +105,6 @@ const on_connect = (message, data) =>{
 export default {
   bind: (fpm) => {
     fpm.registerAction('FPM_ROUTER', (args) => {
-      let fpm = args[0]
       let r = fpm.createRouter()
       fpm.bindRouter(Router(r, fpm))
       dbm = fpm.M

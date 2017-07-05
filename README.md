@@ -1,5 +1,11 @@
 ## Changelog
 
+Version: `0.0.13`
+Add
+  - 调整UI
+  - 运行数据保存
+  - 查看log
+
 Version: `0.0.12`
 Add
   - 显示 data.name 

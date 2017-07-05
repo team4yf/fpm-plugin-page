@@ -38,6 +38,9 @@
     .red{
       color: red;
     }
+    .v{
+      font-size: 12px; color: #555;
+    }
   </style>
 </head>
 
@@ -46,15 +49,20 @@
     <h6>彩金池 约<span class="red" ng-bind="jackpot | currency"></span> (亿)</h6>
     <h6>开关控制</h6>
     <div class="row">
-      <div class="col-md-6 col-xs-6">
+      <div class="col-md-4 col-xs-4">
         <button
           ng-click="send('start')"
           class="btn btn-large btn-block btn-success"><i class="fa fa-play"></i></button>
       </div>
-      <div class="col-md-6 col-xs-6">
+      <div class="col-md-4 col-xs-4">
         <button
           ng-click="send('stop')"
           class="btn btn-large btn-block btn-danger"><i class="fa fa-pause"></i></button>
+      </div>
+      <div class="col-md-4 col-xs-4">
+        <button
+          ng-click="send('update')"
+          class="btn btn-large btn-block"><i class="fa fa-cloud-upload"></i></button>
       </div>
     </div>
     <!--<p>运行状态: <i class="fa fa-circle " ng-class="{'true': 'online', 'false': 'offline'}[status.running]"></i></p>-->
@@ -79,11 +87,17 @@
       <li class="list-group-item"
         ng-repeat="host in status.hosts track by $index"
         ng-click="client(host, $index)">
-        <span ng-bind="host.title"></span>
-        <span ng-bind="host.version"></span>
-        <span ng-bind-html="host.img"></span>
-        <small class="status pull-right" ng-bind="host.status"></small>
-        <div class="clearfix"></div>
+        <div>
+          <span ng-bind-html="host.img"></span>
+          <small class="status pull-right" ng-bind="host.status"></small>
+          <div class="clearfix"></div>
+        </div>
+        <div>
+          <span>ID: <span ng-bind="host.title"></span></span>
+          <span class="v pull-right">V: <span ng-bind="host.version"></span></span>
+          <div class="clearfix"></div>
+        </div>
+        
         <div ng-if="host.control">
           <p></p>
           <div class="row">
@@ -100,12 +114,12 @@
             <div class="col-md-3 col-xs-3">
               <button
                 ng-click="sendClient(host.id, 'update', $event)"
-                class="btn btn-large btn-block btn-success"><i class="fa fa-cloud-upload"></i></button>
+                class="btn btn-large btn-block"><i class="fa fa-cloud-upload"></i></button>
             </div>
             <div class="col-md-3 col-xs-3">
               <button
-                ng-click="sendClient(host.id, 'exit', $event)"
-                class="btn btn-large btn-block btn-danger"><i class="fa fa-close"></i></button>
+                ng-click="openDetail(host.id, $event)"
+                class="btn btn-large btn-block"><i class="fa fa-eye"></i></button>
             </div>
           </div>
         </div>
@@ -154,7 +168,8 @@
         value: '',
       };
       $scope.jackpot = 0;
-      var server = io('http://api.yunplus.io')
+      var server = io('http://api.yunplus.io');
+      // var server = io('http://192.168.199.105:9999')
       server.on('message', function (data) {
         if(data.target !== 'server'){
           return;
@@ -223,6 +238,10 @@
           id: id,
         });
         $event.stopPropagation();
+      }
+      $scope.openDetail = function(id, $event){
+        $event.stopPropagation();
+        window.open('/eggs/logs/' + id);
       }
       $scope.send = function(command, val, $event){
         if(command === 'start'){
