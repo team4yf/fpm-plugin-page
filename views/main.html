@@ -172,6 +172,7 @@
             return;
           case 'connect':
           case 'login':
+          case 'refresh':
             if($scope.status.hosts.searchById(data.id)){
               return
             }

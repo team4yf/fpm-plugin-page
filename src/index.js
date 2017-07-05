@@ -61,6 +61,8 @@ const Router = (router, fpm) => {
 
 let datas = {};
 
+let clients = {};
+
 let jackpot = 0;
 
 let dbm = undefined;
@@ -82,6 +84,10 @@ const on_messages = (message, data) =>{
       return
     case 'connect':
     case 'login':
+      data.login_at = new Date().toLocaleString()
+      clients[data.id] = data
+      return
+    case 'refresh':
       let items = datas[data.id] || []
       data.at = new Date().toLocaleString()
       items.unshift(data)
