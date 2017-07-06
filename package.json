@@ -1,6 +1,6 @@
 {
   "name": "fpm-plugin-page",
-  "version": "0.0.13",
+  "version": "0.0.16",
   "main": "lib/index.js",
   "scripts": {
     "compile": "babel -d lib/ src/",

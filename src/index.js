@@ -67,12 +67,30 @@ let jackpot = 0;
 
 let dbm = undefined;
 
+let fpm = undefined;
+
+const billion = 100000000;
+
 const on_messages = (message, data) =>{
   if(data.target !== 'server') return;
   if(data.channel !== 'Eggs') return;
   if(data.id === undefined) return;
   switch(data.command){
     case 'jackpot':
+      if(jackpot < 25 * billion && data.jackpot >= 25 * billion){
+        // 达到了 25 亿
+        if(fpm){
+          fpm.execute('system.sms', {tpl_id: 39012, mobiles: '13770683580', tpl_value: {number: '25 亿'}}, '0.0.1')
+          fpm.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131,', tpl_value: {number: '25 亿'}}, '0.0.1')
+        }
+      }
+      if(data.jackpot < jackpot/2){
+        // 出了皇家同花顺
+        if(fpm){
+          fpm.execute('system.sms', {tpl_id: 39012, mobiles: '13770683580', tpl_value: {number: 'royal flush'}}, '0.0.1')
+          fpm.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131', tpl_value: {number: 'royal flush'}}, '0.0.1')
+        }
+      }
       jackpot = data.jackpot
       if(dbm){
         let arg = {
@@ -81,11 +99,15 @@ const on_messages = (message, data) =>{
         };
         dbm.createAsync(arg)
       }
+      
       return
     case 'connect':
     case 'login':
       data.login_at = new Date().toLocaleString()
       clients[data.id] = data
+      if(fpm){
+        fpm.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131', tpl_value: {number: data.name + ' online'}}, '0.0.1')
+      }
       return
     case 'refresh':
       if (data.status !== 'PLAYING'){
@@ -108,6 +130,7 @@ export default {
       let r = fpm.createRouter()
       fpm.bindRouter(Router(r, fpm))
       dbm = fpm.M
+      fpm = fpm
       // subscrib the io messages
       fpm.subscribe('socketio.message', on_messages)
       fpm.subscribe('socketio.connection', on_connect)
