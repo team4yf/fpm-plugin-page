@@ -109,10 +109,10 @@ const on_messages = (message, data) =>{
     case 'login':
       data.login_at = new Date().toLocaleString()
       clients[data.id] = data
-      if(fpmServer){
-        fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131', tpl_value: {number: data.name + ' online'}}, '0.0.1')
-          .catch((err)=>{})
-      }
+      // if(fpmServer){
+      //   fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131', tpl_value: {number: data.name + ' online'}}, '0.0.1')
+      //     .catch((err)=>{})
+      // }
       return
     case 'refresh':
       if (data.status !== 'PLAYING'){
