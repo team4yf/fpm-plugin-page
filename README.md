@@ -1,5 +1,11 @@
 ## Changelog
 
+Version: `0.0.20`
+
+TODO:
+  - 固定客户端数量
+  - 显示状态,on/off line, 延迟, ip
+
 Version: `0.0.13`
 Add
   - 调整UI
