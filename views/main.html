@@ -41,12 +41,70 @@
     .v{
       font-size: 12px; color: #555;
     }
+    .host-name{
+      color: #2ecc71; font-size: 16px; text-transform: uppercase;
+    }
+    .host-id{
+      color: #333; font-size: 14px;
+    }
   </style>
 </head>
 
 <body ng-app="app" ng-controller="AppCtrl">
   <div class="container">
     <h6>彩金池 约<span class="red" ng-bind="jackpot | currency"></span> (亿)</h6>
+    <!-- Client -->
+    <h6>客户端列表</h6>
+    <p>在线：<span ng-bind="status.active"></span>
+      <button
+        ng-click="refresh($event)"
+        class="pull-right btn-warning btn btn-xs">点击刷新</button>
+    </p>
+    <div class="clearfix"></div>
+    <ul class="list-group">
+      <li class="list-group-item"
+        ng-repeat="host in status.hosts | orderBy: 'name'"
+        ng-click="client(host, $index)">
+        <div>
+          <span class="host-id">ID: <span ng-bind="host.title"></span> v:<span class="v" ng-bind="host.version"></span></span>
+          <span class="pull-right"><span class="host-name" ng-bind="host.name"></span></span>
+          <div class="clearfix"></div>
+        </div>
+        <div>
+          <span ng-bind-html="host.img"></span>
+          <small class="status pull-right" ng-bind="host.status"></small>
+          <div class="clearfix"></div>
+        </div>
+        
+        <div ng-if="host.control">
+          <p></p>
+          <div class="row" style="padding: 5px;">
+            <div class="col-md-3 col-xs-3">
+              <button
+                ng-click="sendClient(host.id, 'start', $event)"
+                class="btn btn-xs btn-block btn-success"><i class="fa fa-play"></i></button>
+            </div>
+            <div class="col-md-3 col-xs-3">
+              <button
+                ng-click="sendClient(host.id, 'stop', $event)"
+                class="btn btn-xs btn-block btn-danger"><i class="fa fa-pause"></i></button>
+            </div>
+            <div class="col-md-3 col-xs-3">
+              <button
+                ng-click="sendClient(host.id, 'update', $event)"
+                class="btn btn-xs btn-block btn-info"><i class="fa fa-cloud-upload"></i></button>
+            </div>
+            <div class="col-md-3 col-xs-3">
+              <button
+                ng-click="openDetail(host.id, $event)"
+                class="btn btn-xs  btn-block btn-info"><i class="fa fa-eye"></i></button>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <!-- / -->
+    <!-- Swither Start -->
     <h6>开关控制</h6>
     <div class="row">
       <div class="col-md-4 col-xs-4">
@@ -66,6 +124,10 @@
       </div>
     </div>
     <!--<p>运行状态: <i class="fa fa-circle " ng-class="{'true': 'online', 'false': 'offline'}[status.running]"></i></p>-->
+
+    <!-- / -->
+
+    <!-- Text Commander -->
     <h6>指令控制</h6>
     <div>
       <input type="text" ng-model="commander.command" placeholder="Command" class="form-control" />
@@ -76,55 +138,8 @@
           ng-click="send(commander.command, commander.value)"
           class="btn btn-large btn-block btn-inverse">发送</button>
     </div>
-    <h6>客户端列表</h6>
-    <p>在线：<span ng-bind="status.active"></span>
-      <button
-        ng-click="refresh($event)"
-        class="pull-right btn-warning btn btn-xs">点击刷新</button>
-    </p>
-    <div class="clearfix"></div>
-    <ul class="list-group">
-      <li class="list-group-item"
-        ng-repeat="host in status.hosts track by $index"
-        ng-click="client(host, $index)">
-        <div>
-          <span ng-bind-html="host.img"></span>
-          <small class="status pull-right" ng-bind="host.status"></small>
-          <div class="clearfix"></div>
-        </div>
-        <div>
-          <span>ID: <span ng-bind="host.title"></span></span>
-          <span class="v pull-right">V: <span ng-bind="host.version"></span></span>
-          <div class="clearfix"></div>
-        </div>
-        
-        <div ng-if="host.control">
-          <p></p>
-          <div class="row">
-            <div class="col-md-3 col-xs-3">
-              <button
-                ng-click="sendClient(host.id, 'start', $event)"
-                class="btn btn-large btn-block btn-success"><i class="fa fa-play"></i></button>
-            </div>
-            <div class="col-md-3 col-xs-3">
-              <button
-                ng-click="sendClient(host.id, 'stop', $event)"
-                class="btn btn-block btn-danger"><i class="fa fa-pause"></i></button>
-            </div>
-            <div class="col-md-3 col-xs-3">
-              <button
-                ng-click="sendClient(host.id, 'update', $event)"
-                class="btn btn-large btn-block btn-info"><i class="fa fa-cloud-upload"></i></button>
-            </div>
-            <div class="col-md-3 col-xs-3">
-              <button
-                ng-click="openDetail(host.id, $event)"
-                class="btn btn-large btn-block btn-info"><i class="fa fa-eye"></i></button>
-            </div>
-          </div>
-        </div>
-      </li>
-    </ul>
+    <!-- / -->
+    <p></p>
   </div>
 </body>
 <script src="https://cdn.bootcss.com/angular.js/1.6.4/angular.min.js"></script>
@@ -194,9 +209,14 @@
             $scope.status.active = $scope.status.active + 1;
             var imgBaseData = 'data:image/png;base64,' + data.img;
             var img = data.img ? '<img src="' + imgBaseData + '" class="img-rounded" alt="" />' : '';
+            var name = data.name || '>';
+            if(name.indexOf('-')){
+              name = name.split('-');
+            }
             $scope.status.hosts.push({
               id: data.id,
-              title: data.name || '>',
+              name: name[1] || 'UnKnown',
+              title: name[0],
               online: true,
               version: data.version,
               status: data.status,
