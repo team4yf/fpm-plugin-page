@@ -71,7 +71,7 @@
           <div class="clearfix"></div>
         </div>
         <div>
-          <span ng-bind-html="host.img"></span>
+          <span ng-bind="host.douzi | currency"></span>
           <small class="status pull-right" ng-bind="host.status"></small>
           <div class="clearfix"></div>
         </div>
@@ -207,8 +207,6 @@
               return
             }
             $scope.status.active = $scope.status.active + 1;
-            var imgBaseData = 'data:image/png;base64,' + data.img;
-            var img = data.img ? '<img src="' + imgBaseData + '" class="img-rounded" alt="" />' : '';
             var name = data.name || '>';
             if(name.indexOf('-')){
               name = name.split('-');
@@ -220,7 +218,7 @@
               online: true,
               version: data.version,
               status: data.status,
-              img: $sce.trustAsHtml(img),
+              douzi: data.douzi,
             });
             $scope.$apply();
             return;
