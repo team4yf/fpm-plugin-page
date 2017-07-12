@@ -77,25 +77,29 @@ const on_messages = (message, data) =>{
   if(data.id === undefined) return;
   switch(data.command){
     case 'jackpot':
-      if(jackpot < 25 * billion && data.jackpot >= 25 * billion){
-        // 达到了 25 亿
+      if(jackpot < 29 * billion && data.jackpot >= 29 * billion){
+        // 达到了 29 亿
         if(fpmServer){
-          fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '13770683580', tpl_value: {number: '25 亿'}}, '0.0.1')
+          fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '13770683580', tpl_value: {number: '2.9 Billion'}}, '0.0.1')
             .catch((err)=>{})
-          fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131,', tpl_value: {number: '25 亿'}}, '0.0.1')
+          fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131,', tpl_value: {number: '2.9 Billion'}}, '0.0.1')
             .catch((err)=>{})
         }
       }
       if(data.jackpot < jackpot/2 && data.jackpot > 0.1 * billion){
         // 出了皇家同花顺
         if(fpmServer){
-          fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '13770683580', tpl_value: {number: 'royal flush'}}, '0.0.1')
+          fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '13770683580', tpl_value: {number: 'Royal Flush'}}, '0.0.1')
             .catch((err)=>{})
-          fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131', tpl_value: {number: 'royal flush'}}, '0.0.1')
+          fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131', tpl_value: {number: 'Royal Flush'}}, '0.0.1')
             .catch((err)=>{})
         }
       }
       jackpot = data.jackpot
+      if(fpmServer){
+        fpmServer.execute('websocket.broadcast', {command: 'jackpot', jackpot: jackpot, channel: 'Eggs', at: _.now()}, '0.0.1')
+          .catch((err)=>{})
+      }
       if(dbm){
         let arg = {
         　table: "eggs_jackpots",
