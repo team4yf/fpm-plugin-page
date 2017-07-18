@@ -1,6 +1,6 @@
 {
   "name": "fpm-plugin-page",
-  "version": "0.0.22",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "scripts": {
     "compile": "babel -d lib/ src/",
@@ -18,10 +18,7 @@
   "author": "YFsoftcom",
   "license": "MIT",
   "dependencies": {
-    "koa-session2": "node6",
-    "koa-views": "^5.2.1",
-    "lodash": "^4.17.4",
-    "nunjucks": "^3.0.1"
+    "lodash": "^4.17.4"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
@@ -35,6 +32,6 @@
     "fpm-plugin-socketio": "^0.0.4",
     "should": "^11.2.1",
     "yf-fpm-client-nodejs": "^1.0.11",
-    "yf-fpm-server": "^2.2.5"
+    "yf-fpm-server": "^2.2.18"
   }
 }

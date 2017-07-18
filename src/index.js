@@ -1,57 +1,16 @@
 "use strict";
 import _ from 'lodash'
 import path from 'path'
-import Views from 'koa-views'
-import session from 'koa-session2'
 
 const Router = (router, fpm) => {
-  fpm.app.use(Views(path.join(__dirname, '../views'), {
-    extension: 'html',
-    map: { html: 'nunjucks' }
-  }))
-  fpm.app.use(session({
-    key: "SESSIONID",   //default "koa:sess"
-  }))
-  fpm.app.use(async (ctx, next) => {
 
-    let path = ctx.request.url
-    if (path === '/' || path === '/eggs/login') {
-      await next()
-    } else {
-      let user = ctx.session.user
-      if (!user) {
-        ctx.redirect('/eggs/login')
-      } else {
-        await next()
-      }
-    }
-
+  router.get('/admin/eggs/main', async (ctx, next) => {
+    await ctx.render('eggs/main')
   })
 
-  router.get('/eggs/login', async (ctx, next) => {
-    await ctx.render('login', {
-
-    })
-  })
-
-  router.post('/eggs/login', async (ctx, next) => {
-    //check pass
-    let loginInfo = ctx.request.body
-    if (loginInfo.name === 'admin' && loginInfo.pass === '741235896') {
-      ctx.session.user = loginInfo
-      ctx.body = { code: 0 }
-    } else {
-      ctx.body = { code: -99, error: 'User Or Pass Error ' }
-    }
-  })
-
-  router.get('/eggs/main', async (ctx, next) => {
-    await ctx.render('main')
-  })
-
-  router.get('/eggs/logs/:id', async (ctx, next) => {
+  router.get('/admin/eggs/logs/:id', async (ctx, next) => {
     let id = ctx.params.id
-    await ctx.render('log', {
+    await ctx.render('eggs/log', {
       items: datas[id]
     })
   })
@@ -135,6 +94,7 @@ const on_connect = (message, data) =>{
 
 export default {
   bind: (fpm) => {
+    fpm.copyViews(path.join(__dirname, '../views/eggs' ), 'eggs')
     fpm.registerAction('FPM_ROUTER', (args) => {
       let r = fpm.createRouter()
       fpm.bindRouter(Router(r, fpm))
