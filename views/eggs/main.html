@@ -53,6 +53,7 @@
 <body ng-app="app" ng-controller="AppCtrl">
   <div class="container">
     <h6>彩金池 约<span class="red" ng-bind="jackpot | currency"></span> (亿)</h6>
+    <p>在线玩家 <span class="red" ng-bind="players"></span></p>
     <!-- Client -->
     <h6>客户端列表</h6>
     <p>在线：<span ng-bind="status.active"></span>
@@ -183,6 +184,7 @@
         value: '',
       };
       $scope.jackpot = 0;
+      $scope.players = 0;
       var server = io('http://api.yunplus.io');
       // var server = io('http://192.168.199.105:9999')
       server.on('message', function (data) {
@@ -198,6 +200,7 @@
         switch(data.command){
           case 'jackpot':
             $scope.jackpot = data.jackpot * 1.00 / 100000000;
+            $scope.players = data.players;
             $scope.$apply();
             return;
           case 'connect':

@@ -62,7 +62,7 @@ const on_messages = (message, data) =>{
       if(dbm){
         let arg = {
         　table: "eggs_jackpots",
-        　row: { jackpot: parseInt(jackpot), createAt: _.now()}
+        　row: { players: parseInt(data.players || 0), jackpot: parseInt(jackpot), createAt: _.now()}
         };
         dbm.createAsync(arg)
       }
@@ -72,14 +72,50 @@ const on_messages = (message, data) =>{
     case 'login':
       data.login_at = new Date().toLocaleString()
       clients[data.id] = data
-      // if(fpmServer){
-      //   fpmServer.execute('system.sms', {tpl_id: 39012, mobiles: '15995143131', tpl_value: {number: data.name + ' online'}}, '0.0.1')
-      //     .catch((err)=>{})
-      // }
+      if(dbm){
+        let name = data.name || '>';
+        if(name.indexOf('-')){
+          name = name.split('-');
+        }
+        let arg = {
+        　table: "eggs_robot_status",
+        　row: { 
+            clientid: data.id,
+            name: name[1] || 'UnKnown',
+            title: name[0],
+            douzi: data.douzi || 0,
+            createAt: _.now(),
+            ip: '-',
+            command: 'login',
+            status: data.status || '-',
+          }
+        };
+        dbm.createAsync(arg)
+      }
       return
     case 'refresh':
       if (data.status !== 'PLAYING'){
         return;
+      }
+      if(dbm){
+        let name = data.name || '>';
+        if(name.indexOf('-')){
+          name = name.split('-');
+        }
+        let arg = {
+        　table: "eggs_robot_status",
+        　row: { 
+            clientid: data.id,
+            name: name[1] || 'UnKnown',
+            title: name[0],
+            douzi: data.douzi || 0,
+            createAt: _.now(),
+            ip: '-',
+            command: 'refresh',
+            status: data.status || '-',
+          }
+        };
+        dbm.createAsync(arg)
       }
       let items = datas[data.id] || []
       data.at = new Date().toLocaleString()
